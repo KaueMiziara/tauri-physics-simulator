@@ -1,5 +1,9 @@
-function App() {
-  return <h1>Hello, world!</h1>;
-}
+import { Scene } from "./components/scene";
 
-export default App;
+export default function App() {
+  return (
+    <div className="app-container">
+      <Scene />
+    </div>
+  );
+}
