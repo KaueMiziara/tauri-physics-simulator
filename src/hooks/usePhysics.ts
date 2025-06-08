@@ -20,27 +20,31 @@ export const usePhysics = (
   ballRef: React.RefObject<PositionableObject | null>,
 ) => {
   useEffect(() => {
-    let animationFrameId: number;
+    let running = true;
     let lastTime = performance.now();
 
-    const animate = async (time: number) => {
-      const dt = (time - lastTime) / 1000;
-      lastTime = time;
+    const runPhysics = async () => {
+      while (running) {
+        const time = performance.now();
+        const dt = Math.min((time - lastTime) / 1000, 0.1);
+        lastTime = time;
 
-      await invoke("physics_step", { dt });
+        await invoke("physics_step", { dt });
+        const position = await invoke<BallPosition>("get_ball_position");
 
-      const postition = await invoke<BallPosition>("get_ball_position");
+        if (ballRef.current) {
+          ballRef.current.position.set(position.x, position.y, position.z);
+        }
 
-      if (ballRef.current) {
-        ballRef.current.position.set(postition.x, postition.y, postition.z);
+        await new Promise((resolve) => requestAnimationFrame(resolve));
       }
-
-      animationFrameId = requestAnimationFrame(animate);
     };
-    animationFrameId = requestAnimationFrame(animate);
+
+    invoke("reset_simulation");
+    runPhysics();
 
     return () => {
-      cancelAnimationFrame(animationFrameId);
+      running = false;
     };
   }, [ballRef]);
 };

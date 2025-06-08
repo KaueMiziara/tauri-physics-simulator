@@ -10,6 +10,11 @@ pub struct AppState {
 }
 
 #[tauri::command]
+pub fn reset_simulation(state: tauri::State<AppState>) {
+    state.physics_world.lock().unwrap().reset();
+}
+
+#[tauri::command]
 pub fn get_ball_position(state: tauri::State<AppState>) -> BallPosition {
     let world = state.physics_world.lock().unwrap();
     let [x, y, z] = world.ball.position;
